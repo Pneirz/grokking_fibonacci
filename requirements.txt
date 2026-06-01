@@ -1,0 +1,5 @@
+numpy
+torch
+matplotlib
+pykan
+efficient-kan @ git+https://github.com/Blealtan/efficient-kan.git
