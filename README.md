@@ -18,7 +18,7 @@ control.
 - `scripts/plot_prediction_profiles.py`: regenerates the final prediction and
   relative-error figure from archived prediction CSV files.
 - `figures/`: vector (PDF/SVG) and 1200-dpi PNG exports of the regenerated
-  prediction-profile figure, with its provenance note.
+  figures, with provenance and verification notes.
 - `outputs/confirm_*`: archived ten-seed, one-million-update raw-index runs.
 - `outputs/short_raw_analytic_baselines`: log-linear and polynomial diagnostic
   baselines for the short raw-index split.
@@ -61,3 +61,5 @@ The command writes `figures/fig_prediction_profiles.pdf`,
 
 The corresponding Figure 1 commands are documented in `RUNS.md`. Its source
 data and rendering rules are recorded in `figures/FIGURE_1_PROVENANCE.md`.
+`figures/FIGURE_VERIFICATION.md` records the scope and outcomes of the
+reproducibility checks for both figures.

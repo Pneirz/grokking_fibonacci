@@ -15,3 +15,6 @@ The command below performs only aggregation and rendering over archived CSV
 records; it does not train models or alter results. The `--publication` option
 sets the final width to 122 mm. PDF and SVG are vector assets; PNG is rendered
 at 1200 dpi.
+
+See `FIGURE_VERIFICATION.md` for the distinction between numerical
+reproducibility and raster-pixel identity.

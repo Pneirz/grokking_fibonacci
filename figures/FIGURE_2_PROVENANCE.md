@@ -17,3 +17,6 @@ the far-success threshold of `5e-2`.
 The script does not train models or alter experiment outputs. It is a plotting
 step over the archived CSV records. The PDF and SVG are vector assets. The PNG
 is rendered at 1200 dpi at the manuscript's 122 mm figure width.
+
+See `FIGURE_VERIFICATION.md` for the reconstruction scope and its comparison
+with the legacy figure.
