@@ -38,6 +38,30 @@ generated with local CPU runs.
 .\.venv\Scripts\python.exe scripts\plot_short_dynamics.py --curves outputs\confirm_mlp2x512_10seed_1m_eval10k\curves.csv outputs\confirm_product_mlp2x256_10seed_1m_eval10k\curves.csv outputs\confirm_multkan_medium_10seed_1m_eval10k\curves.csv outputs\confirm_feature_controls_10seed_1m_eval10k\curves.csv outputs\confirm_nac_nalu_10seed_1m_eval10k\curves.csv outputs\confirm_iter_rnn_10seed_1m_eval10k\curves.csv outputs\confirm_iter_gru_10seed_1m_eval10k\curves.csv outputs\confirm_iter_lstm_10seed_1m_eval10k\curves.csv outputs\confirm_recurrent_h2_10seed_1m_eval10k\curves.csv --output outputs\short_dynamics.pdf
 ```
 
+For publication assets at 122 mm width, run the same command with
+`--publication` once for each output format:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\plot_short_dynamics.py --curves outputs\confirm_mlp2x512_10seed_1m_eval10k\curves.csv outputs\confirm_product_mlp2x256_10seed_1m_eval10k\curves.csv outputs\confirm_multkan_medium_10seed_1m_eval10k\curves.csv outputs\confirm_feature_controls_10seed_1m_eval10k\curves.csv outputs\confirm_nac_nalu_10seed_1m_eval10k\curves.csv outputs\confirm_iter_rnn_10seed_1m_eval10k\curves.csv outputs\confirm_iter_gru_10seed_1m_eval10k\curves.csv outputs\confirm_iter_lstm_10seed_1m_eval10k\curves.csv outputs\confirm_recurrent_h2_10seed_1m_eval10k\curves.csv --publication --output figures\fig_short_dynamics.pdf
+```
+
+Change only the output extension to `.svg` or `.png` to regenerate the other
+two committed Figure 1 assets. The PNG uses 1200 dpi by default.
+
+## Prediction-Profile Figure
+
+This command reconstructs the manuscript's final prediction and relative-error
+profile directly from the archived `predictions.csv` files. It does not train
+models or change saved experiment results.
+
+```powershell
+.\.venv\Scripts\python.exe scripts\plot_prediction_profiles.py --output-dir figures
+```
+
+It writes `fig_prediction_profiles.pdf`, `fig_prediction_profiles.svg`, and a
+1200-dpi PNG. The script validates that each displayed model has ten seeds at
+every archived index from 0 through 60.
+
 ## Modular Controls
 
 For each encoding in `onehot`, `scalar`, and `fourier`, and each seed in
@@ -46,8 +70,9 @@ For each encoding in `onehot`, `scalar`, and `fourier`, and each seed in
 ```powershell
 .\.venv\Scripts\python.exe -m fibonacci_grokking.train --model mlp --task all_pairs --modulus 17 --encoding scalar --seed 0 --steps 50000 --eval-every 1000 --batch-size 0 --lr 0.001 --weight-decay 1.0 --hidden-dim 256 --depth 2 --activation gelu --output outputs\modular_m17_scalar_seed0_50k.csv
 
-.\.venv\Scripts\python.exe -m fibonacci_grokking.train --model mlp --task all_pairs --modulus 7 --encoding scalar --seed 0 --steps 30000 --eval-every 1000 --batch-size 0 --lr 0.001 --weight-decay 1.0 --hidden-dim 256 --depth 2 --activation gelu --output outputs\modular_m7_scalar_seed0_30k.csv
+.\.venv\Scripts\python.exe -m fibonacci_grokking.train --model mlp --task all_pairs --modulus 7 --encoding scalar --seed 0 --steps 30000 --eval-every 500 --batch-size 0 --lr 0.001 --weight-decay 1.0 --hidden-dim 128 --depth 2 --activation gelu --output outputs\modular_m7_scalar_seed0_30k.csv
 ```
 
 Replace `scalar` and `seed0` in the example paths with the selected encoding
-and seed.
+and seed. The m = 17 runs use width 256 and evaluation every 1,000 updates;
+the m = 7 runs use width 128 and evaluation every 500 updates.

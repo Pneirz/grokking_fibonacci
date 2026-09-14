@@ -7,8 +7,14 @@ import csv
 from collections import defaultdict
 from pathlib import Path
 
+import matplotlib
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
+
+
+matplotlib.rcParams.update({"pdf.fonttype": 42, "ps.fonttype": 42, "svg.fonttype": "none"})
 
 
 def read_curves(path: Path) -> dict[str, dict[int, dict[str, list[float]]]]:
@@ -39,7 +45,13 @@ def merge_curves(paths: list[Path]) -> dict[str, dict[int, dict[str, list[float]
     return merged
 
 
-def plot(paths: list[Path], output: Path) -> None:
+def normalize_svg(path: Path) -> None:
+    """Remove insignificant line-ending whitespace from a generated SVG."""
+    lines = path.read_text(encoding="utf-8").splitlines()
+    path.write_text("\n".join(line.rstrip() for line in lines) + "\n", encoding="utf-8")
+
+
+def plot(paths: list[Path], output: Path, publication: bool, dpi: int) -> None:
     curves = merge_curves(paths)
     labels = {
         "mlp_raw_2x512": "MLP 2x512",
@@ -76,7 +88,10 @@ def plot(paths: list[Path], output: Path) -> None:
         ("far", "Far-band error", 5e-2),
     ]
 
-    fig, axes = plt.subplots(2, 2, figsize=(8.8, 6.35), sharex=True)
+    figure_size = (122 / 25.4, 4.25) if publication else (8.8, 6.35)
+    font_size = 6.5 if publication else 10
+    legend_size = 6.0 if publication else 7
+    fig, axes = plt.subplots(2, 2, figsize=figure_size, sharex=True)
     flat_axes = axes.ravel()
     handles_by_model = {}
     for model in model_order:
@@ -90,42 +105,58 @@ def plot(paths: list[Path], output: Path) -> None:
                 steps,
                 medians,
                 color=colors.get(model),
-                linewidth=1.35,
+                linewidth=1.05 if publication else 1.35,
                 label=labels.get(model, model),
             )
             ax.fill_between(steps, q1, q3, color=colors.get(model), alpha=0.12)
             handles_by_model.setdefault(model, line)
 
     for ax, (_metric, title, threshold) in zip(flat_axes, metrics):
-        ax.axhline(threshold, color="0.35", linestyle="--", linewidth=0.9)
-        ax.set_title(title)
-        ax.set_xlabel("Updates")
-        ax.set_ylabel("Mean relative absolute error")
+        ax.axhline(threshold, color="0.35", linestyle="--", linewidth=0.7 if publication else 0.9)
+        ax.set_title(title, fontsize=font_size)
+        ax.set_xlabel("Updates", fontsize=font_size)
+        ax.set_ylabel("Mean relative absolute error", fontsize=font_size)
         ax.set_yscale("log")
         ax.set_xlim(left=0)
         ax.grid(True, which="both", linewidth=0.35, alpha=0.45)
+        ax.tick_params(labelsize=font_size)
     fig.legend(
         [handles_by_model[model] for model in model_order],
         [labels.get(model, model) for model in model_order],
         loc="upper center",
         bbox_to_anchor=(0.5, 1.0),
         ncol=4,
-        fontsize=7,
+        fontsize=legend_size,
         frameon=False,
-        columnspacing=1.2,
-        handlelength=1.8,
+        columnspacing=0.7 if publication else 1.2,
+        handlelength=1.5 if publication else 1.8,
     )
-    fig.tight_layout(rect=(0, 0, 1, 0.9))
+    if publication:
+        fig.subplots_adjust(left=0.155, right=0.99, bottom=0.115, top=0.79, wspace=0.34, hspace=0.44)
+    else:
+        fig.tight_layout(rect=(0, 0, 1, 0.9))
     output.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(output, bbox_inches="tight")
+    save_kwargs = {"dpi": dpi}
+    if not publication:
+        save_kwargs["bbox_inches"] = "tight"
+    fig.savefig(output, **save_kwargs)
+    if output.suffix.lower() == ".svg":
+        normalize_svg(output)
+    plt.close(fig)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--curves", nargs="+", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument(
+        "--publication",
+        action="store_true",
+        help="render at 122 mm width with publication-size labels",
+    )
+    parser.add_argument("--dpi", type=int, default=1200, help="PNG resolution; ignored by vector formats")
     args = parser.parse_args()
-    plot(args.curves, args.output)
+    plot(args.curves, args.output, args.publication, args.dpi)
 
 
 if __name__ == "__main__":
